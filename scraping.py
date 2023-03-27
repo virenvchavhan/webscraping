@@ -2,6 +2,13 @@ from bs4 import BeautifulSoup, Tag
 import requests
 import mysql.connector
 
+def valid_data(tag):
+  if type(tag) == Tag:
+    data = tag.text
+  else:
+    data = "data unavailable"
+  return data
+
 year = [2020,2021,2022,2023]
 for yr in year:
   url = f'http://www.gameinformer.com/{yr}'
@@ -22,17 +29,15 @@ for yr in year:
 
   cursor = mydb.cursor()
 
-  for d in data:
-      if type(d.em) == Tag:
-        console = d.em.text
-      else:
-        console = "data unavailable"
 
-      date = f'{d.time.text} {yr}'
-      sql = "INSERT INTO gi_videogame (game, console, release_date) VALUES (%s, %s, %s)"
-      values = (d.a.text, console, date)
-      cursor.execute(sql, values)
-      mydb.commit()
+  for d in data:
+    game = valid_data(d.a)
+    console = valid_data(d.em)
+    date = f'{valid_data(d.time)} {yr}' 
+    sql = "INSERT INTO gi_videogame (game, console, release_date) VALUES (%s, %s, %s)"
+    values = (game, console, date)
+    cursor.execute(sql, values)
+    mydb.commit()
 
 mydb.close()
 
